@@ -1,381 +1,445 @@
 #include <iostream>
 #include<fstream>
-#include <string>
-#include<cstdlib>
-#include <algorithm>
+#include<string>
+#include<time.h>
+#include<windows.h>
+#include<conio.h>
 using namespace std;
-struct                                // struct array
+#define s 9
+string file;
+int col = 0, row = 0,num;
+struct stack
 {
-    string name;
-    float hours;
-    float price;
-    float tax;
-    float gross;
-    float net;
-}
-employ[10];
-double total;
-//read file
-void rfile()
-{
+    int arr[10][2];
     int i;
-    ifstream re;
-    re.open("emp.txt");
-    for (i = 0; i <= 10; i++)
-    {
-        re >> employ[i].name;
-        re >> employ[i].hours;
-        re >> employ[i].price;
-    }
-    re.close();
-}
-int size_of_struct(int &n)            //calculate size of struct .. passing number on (n)
+};
+stack st;
+void menu();
+struct node
 {
-    rfile();// to call function
-    n = -1;
-    for (int i = 0; i <= 10; i++)
-        if (employ[i].price>0)       // when price is >0 then  n=n+1
-            n++;
-    return n;
-}
-
-void add()                          // function add Employee
+    int data;
+    node*right, *down;
+};
+node*head = NULL, *cr, *pr, *pd, *con;
+//void Interface/////////////////////////////
+void append(int d);
+void setcolor(unsigned short color) ;                //The function that you'll use to
+void display();
+void chang(int r, int c, int n);
+void load(string name);
+void save(string name);
+bool checkcol(int col, int num);
+bool checkrow(int row, int num);
+bool checkbox(int row, int col, int value);
+bool ok (int row,int col,int num);
+bool solve();
+void createSudoku();
+void newgame();
+void play();
+void menu();
+//////////////////////////////////////////////8
+void append(int d)
 {
-    rfile();
-    int n;
-    size_of_struct(n);
-    ofstream wr;
-    wr.open("emp.txt", ios::app);
-    cout << "Name  :  ";
-    getline(cin, employ[0].name);
-    wr << employ[0].name << endl;     // save in file
-    cout << "Hours of month : ";
-    cin >> employ[0].hours;
-    while (1)                // handling if user input mistake or errors
-    {
-        if (cin.fail() || employ[0].hours <= 0 || employ[0].hours >= 720)
-        {
-            cin.clear();
-            cin.ignore(100, '\n');
-            cout << "Wrong input Try again : ";
-            cin >> employ[0].hours;
-            continue;
-        }
-        break;
-    }
-    wr << employ[0].hours << endl;
-    cout << "price in hours : ";
-    cin >> employ[0].price;
-    while (1)                                // handling if user input mistake or errors
-    {
-        if (cin.fail() || employ[0].price <= 0)
-        {
-            cin.clear();
-            cin.ignore(100, '\n');
-            cout << "Wrong input  Try again : ";
-            cin >> employ[0].price;
-            continue;
-        }
 
-        break;
-    }
-    wr << employ[0].price << endl;
-    cout << endl;
-
-}
-
-void tax()                     //calculate  tax
-{
-    int n;
-    size_of_struct(n);
-    for (int i = 0; i <= n; i++)
+    cr = new node;
+    cr->data = d;
+    if (col == s)
     {
-        if (employ[i].gross< 0.00)
-            employ[i].tax = 0;
-        else if (employ[i].gross < 15000)
-            employ[i].tax = 0.15 * employ[i].gross;
-        else if (employ[i].gross < 30000)
-            employ[i].tax = (employ[i].gross - 15000.00) * 0.16 + 2250.00;
-        else if (employ[i].gross < 50000)
-            employ[i].tax = (employ[i].gross - 30000.00) * 0.18 + 4650.00;
-        else if (employ[i].gross < 80000)
-            employ[i].tax = (employ[i].gross - 50000.00) * 0.20 + 8250.00;
-        else if (employ[i].gross <= 150000)
-            employ[i].tax = (employ[i].gross - 80000.00) * 0.25 + 14250.00;
-        else
-            employ[i].tax = 0;
+        col = 0;
+        con = pd;
+        pd->down = cr;
+        pd = pd->down;
+        pr = pd;
+        con = con->right;
+        row++;
     }
-}
-
-void compute()//calculate the gross and Nat salary and total salary of company
-{
-    rfile();
-    int n;
-    size_of_struct(n);
-    float maxm = 0;
-    float minm = employ[n].net;
-    char c;
-    cout << "\nG- Gross \n" << "N- Net salary \n" << "T- Total \n" << "X- Max\n" << "I- Min\n";
-    cout << "Enter your choice >> ";
-    cin >> c;
-    cin.clear();
-    cin.ignore(100, '\n');
-    if (c == 'G' || c == 'g')                       //calculate gross ...gross = hours * price
+    if (head == NULL)
     {
-        for (int k = 0; k <= 10; k++)
-            employ[k].gross = employ[k].hours*employ[k].price;
-    }
-    else if (c == 'N' || c == 'n')                  //calculate Net salary ...Net = gross + (gross*0.52)-tax
-    {
-        tax();
-        for (int i = 0; i <= 10; i++)
-            employ[i].net = employ[i].gross + (employ[i].gross*0.52) - employ[i].tax;
-    }
-    else if (c == 'T' || c == 't')                 //calculate total
-    {
-        for (int i = 0; i <= 10; i++)
-            total += employ[i].net;
-
-        cout << "\nTotal is : " << total << " $" << endl;
-    }
-    else if (c == 'X' || c == 'x')                  //calculate max salary
-    {
-        for (int x = 0; x<10; x++)
-            if (employ[x].net>maxm)
-            {
-                maxm = employ[x].net;
-            }
-        for (int a = 0; a<10; a++)
-            if (maxm == employ[a].net)
-            {
-                cout << " Name : " << employ[a].name << endl;
-                cout << "gross : " << employ[a].gross << endl;
-                cout << "tax : " << employ[a].tax << endl;
-                cout << "Net salary : " << employ[a].net << endl;
-                break;
-            }
-    }
-    else if (c == 'i' || c == 'I') //calculate min salary
-    {
-        for (int s = 0; s<n; s++)
-            if (employ[s].net < minm)
-            {
-                minm = employ[s].net;
-            }
-        for (int p = 0; p<10; p++)
-            if (minm == employ[p].net)
-            {
-                cout << " Name : " << employ[p].name << endl;
-                cout << "gross : " << employ[p].gross << endl;
-                cout << "tax : " << employ[p].tax << endl;
-                cout << "Net salary : " << employ[p].net << endl;
-                break;
-            }
-
+        head = cr;
+        pd = cr;
+        pr = cr;
     }
     else
-        cout << "Please try again !!! \n";
-
-}
-void print_all()  // print all Employees and sort struct
-{
-    int n;
-    size_of_struct(n);
-    string temp_name;
-    float temp,temp_hours,temp_price,temp_gross,temp_tax;
-    for(int j=0; j<=n; j++) // sort struct array
     {
-        for(int s=0; s<n; s++)
+        pr->right = cr;
+        pr = pr->right;
+        cr->right = NULL;
+        cr->down = NULL;
+        if (row>0 && col>0)
         {
-
-            if(employ[j].net>employ[s].net)
-            {
-                temp=employ[j].net;            //sort net salary
-                employ[j].net=employ[s].net;           // swap
-                employ[s].net=temp;
-
-                temp_name=employ[j].name;      // sort name
-                employ[j].name=employ[s].name;        // swap
-                employ[s].name=temp_name;
-
-                temp_hours=employ[j].hours;     // sort hours
-                employ[j].hours=employ[s].hours;      // swap
-                employ[s].hours=temp_hours;
-
-                temp_price=employ[j].price; // sort price
-                employ[j].price=employ[s].price;     // swap
-                employ[s].price=temp_price;
-
-                temp_gross=employ[j].gross; //sort gross
-                employ[j].gross=employ[s].gross;    // swap
-                employ[s].gross=temp_gross;
-
-                temp_tax=employ[j].tax; // sort tax
-                employ[j].tax=employ[s].tax;      // swap
-                employ[s].tax=temp_tax;
-
-            }
+            con->down = cr;
+            con = con->right;
         }
     }
-
-    for (int i = 0; i<=n; i++)
+    col++;
+}
+void setcolor(unsigned short color)                 //The function that you'll use to
+{
+    //set the colour
+    HANDLE hcon = GetStdHandle(STD_OUTPUT_HANDLE);
+    SetConsoleTextAttribute(hcon, color);
+}
+void display()
+{
+    int i = 0;
+    int j = 0;
+    node*dp = head, *rp;
+    setcolor(8);
+    cout << "----------------------------";
+    cout << endl;
+    while (dp != NULL)
     {
-        cout << i + 1 << "- Name : " << employ[i].name << endl;
-        cout << "hours : " << employ[i].hours << endl;
-        cout << "price : " << employ[i].price << " $" << endl;
-        cout << "gross : " << employ[i].gross << " $" << endl;
-        cout << "tax : " << employ[i].tax << " $" << endl;
-        cout << "Net salary : " << employ[i].net << " $" << endl;
+        rp = dp;
+        j = 0;
+        while (rp != NULL)
+        {
+            if (j == 0)             //desien
+            {
+                setcolor(12);
+                cout << "| ";
+                setcolor(10);
+            }
+            //setcolor(1);
+            cout << rp->data << " ";
+            if (j == 2 || j == 5 || j == 8)
+            {
+                setcolor(12);
+                cout << " | ";
+                setcolor(10);
+            }
+            rp = rp->right;
+            j++;
+        }
+        if (i == 2 || i == 5 || i == 8)
+        {
+            setcolor(8);
+            cout << endl << "----------------------------";
+            setcolor(15);
+
+        }
+        cout << endl;
+        dp = dp->down;
+        i++;
+
     }
 }
-void print_one()
+void chang(int r, int c, int n)
 {
-    int n;
-    size_of_struct(n);
-    for (int j = 0; j <= n; j++)// print name of all Employee
-        cout << j + 1 << "- Name : " << employ[j].name << "  ";
-    cout << endl;
-    int num;
-    cout << "Enter number of Employee to print : ";
-    cin >> num;
+    node*dp = head, *rp;
+    for (int i = 0; i<r; i++)
+        dp = dp->down;
+    rp = dp;
+    for (int j = 0; j<c; j++)
+        rp = rp->right;
+    cr = rp;
+    cr->data = n;
+}
+void load()
+{
+    int x;
+    ifstream f;
+    f.open("data.txt");      //open of file to save asma2 elnase kolha
+    while (!f.eof())
+    {
+        f >> file;
+        cout << file << endl;
+    }
+    f.close();
+    cout << "Enter file name to load  : ";
+    cin >> file;
+    ifstream r;
+    r.open(file.c_str());        // hutb3 el2sm elenta da5alto
+    while (!r.eof())
+    {
+        r >> x;
+        append(x);             //7ot el x fe elinked list
+    }
+    r.close();
+}
+void save(string name)
+{
+    node*dp = head, *rp;
+    ofstream fd;
+    fd.open("data.txt", ios::app);
+    fd << name << endl;
+    fd.close();
+    ofstream sv;
+    sv.open(name.c_str());
+    while (dp != NULL)
+    {
+        rp = dp;
+        while (rp != NULL)
+        {
+            if (rp->right == NULL)
+                sv << rp->data;
+            else
+                sv << rp->data << " ";
+            rp = rp->right;
+        }
+        if (dp->down != NULL)
+            sv << endl;
+        dp = dp->down;
+    }
+    sv.close();
+}
+bool checkcol(int col, int num)
+{
+    node*dp = head, *rp;
+    rp = dp;
+    for (int j = 0; j<col; j++)
+        rp = rp->right;
+    dp = rp;
+    for (int i = 0; i<s; i++)
+    {
+        if (dp->data == num)
+            return false;
+        dp = dp->down;
+
+    }
+    return true;
+}
+bool checkrow(int row, int num)
+{
+    node*dp = head, *rp;
+    rp = dp;
+    for (int j = 0; j<row; j++)
+        dp = dp->down;
+    rp = dp;
+    for (int i = 0; i<s; i++)
+    {
+        if (rp->data == num)
+            return false;
+        rp = rp->right;
+
+    }
+    return true;
+}
+bool cheakbox(int row, int col, int value)
+{
+    node*dp = head, *rp;
+
+    int r = 0;
+    int c = 0;
+    if (row >= 0 && row <= 2)
+        r = 0;
+    else if (row >= 3 && row <= 5)
+        r = 3;
+    else if (row >= 6 && row <= 8)
+        r = 6;
+    if (col >= 0 && col <= 2)
+        c = 0;
+    else if (col >= 3 && col <= 5)
+        c = 3;
+    else if (col >= 6 && col <= 8)
+        c = 6;
+
+    dp = head;
+    for (int i = 0; i < r; i++)
+        dp = dp->down;
+    for (int i = 0; i < 3; i++)
+    {
+        rp = dp;
+        for (int j = 0; j< c; j++)
+            rp = rp->right;
+        for (int i = 0; i < 3; i++)
+        {
+            if (rp->data == value)
+                return false;
+            rp = rp->right;
+        }
+        dp = dp->down;
+    }
+    return true;
+}
+bool ok(int row, int col, int num)
+{
+    return checkrow(row, num) && checkcol(col, num) && cheakbox(row, col, num);
+}
+bool zero(int &row, int &col)
+{
+    node*dp = head, *rp;
+    for (row = 0; row<s; row++)
+    {
+        rp = dp;
+        for (col = 0; col<s; col++)
+        {
+            if (rp->data == 0)
+                return false;
+            rp = rp->right;
+        }
+        dp = dp->down;
+    }
+    return true;
+}
+bool solve()
+{
+    int row, col;
+    if (zero(row, col))
+        return true;
+    for (int num = 1; num<10; num++)
+    {
+        if (ok(row, col, num))
+        {
+            chang(row, col, num);
+            if (solve())
+                return true;
+            chang(row, col, 0);
+        }
+    }
+    return false;
+}
+void createSudoku()
+{
+    for (int i = 0; i < 9; i++)
+    {
+        for (int j = 0; j < 9; j++)
+        {
+            append(0);
+        }
+    }
+}
+void newgame()
+{
+    createSudoku();
+    int cnt = 20, i;
+    cout << "Enter the level \n1-easy\n2-mid\n3-hard \n";
+    cin >> i;
+    if (i == 1)
+        i = 30;
+    else if (i == 2)
+        i = 42;
+    else if (i == 3)
+        i = 55;
+    else
+    {
+        cout << "Error Entry \n";
+        exit(0);
+    }
+    srand(time(NULL));
+    while (cnt--)
+    {
+        int row = rand() % 9, col = rand() % 9, value = rand() % 9;
+        if (ok(row, col, value))
+        {
+            chang(row, col, value);
+        }
+    }
+    if (solve())
+    {
+        srand(time(NULL));
+        while (i--)
+        {
+            int row = rand() % 9, col = rand() % 9;
+            chang(row, col, 0);
+        }
+    }
+}
+void redo(int row,int col)
+{
+    st.i++;
+    st.arr[st.i][0]= row;
+    st.arr[st.i][1]=col;
+}
+void undo(int &row,int &col)
+{
+    st.i--;
+    row= st.arr[st.i][0];
+    col=st.arr[st.i][1];
+}
+int cont=0;
+void play()
+{
+    char c = 0;
+    string name;
+    int row, col, num,r,co,v;
     while (1)
     {
-        if (cin.fail() || num <= 0)
+        display();
+        do
         {
-            cin.clear();
-            cin.ignore(256, '\n');
-            cout << "Wrong input  Try again : ";
+            cout << "Enter row : ";
+            cin >> row;
+        }
+        while (row > 9);
+        row--;
+        do
+        {
+            cout << "Enter colum : ";
+            cin >> col;
+
+        }
+        while (col > 9);
+        col--;
+        do
+        {
+            cout << "Enter number : ";
             cin >> num;
-            continue;
         }
-
-        break;
+        while (num > 9);
+        if (ok(row, col, num))
+        {
+            chang(row, col, num);
+            redo(row,col);
+        }
+        else
+            play();
+        display();
+        cout << "'c' to solve to continue or 's' to save or 'e' to exit or 'u' to undo or : ";
+        cin >> c;
+        if (c == 'c' || c == 'C')
+        {
+            if (solve() == true)
+                display();
+            else
+                cout << "No solution exists";
+            break;
+        }
+        else if (c == 's' || c == 'S')
+        {
+            cout << "Enter name of game : ";
+            cin >> name;
+            save(name);
+            break;
+        }
+        else if (c == 'y' || c == 'Y')
+            continue;
+        else if (c == 'u' || c == 'U')
+        {
+            undo(r,co);
+            chang(r,co,0);
+            cout<<r<<"  "<<co<<endl;
+            getch();
+        }
+        else if (c =='e'||c =='E')
+            break;
+        system("cls");
+        cont++;
     }
-    cout << num << "- Name : " << employ[num - 1].name << endl;
-    cout << "gross : " << employ[num - 1].gross << endl;
-    cout << "tax : " << employ[num - 1].tax << endl;
-    cout << "Net salary : " << employ[num - 1].net << endl;
 }
-void print() // function to choose print all Employee or print one Employee
+void menu()
 {
-    int n;
-    size_of_struct(n);
-    int c;
-    cout << "1- print all Employee data \n" << "2- print one Employee data \n";
+    char c;
+    int i = 0;
+    system("cls");
+    cout << "N- for new game\nL- for load game\nE- key for exit\n";
     cin >> c;
-    while (1)
+    if (c == 'l' || c == 'L')
     {
-
-        if (cin.fail() || c <= 0)
-        {
-            cin.clear();
-            cin.ignore(256, '\n');
-            cout << "Wrong input  Try again : ";
-            cin >> c;
-            continue;
-        }
-
-        break;
-
+        load();
+        play();
     }
-    if (c == 1)       //case 1
-        print_all();
-    else if (c == 2)
-        print_one();//case 2
+    else if (c == 'n' || c == 'N')
+    {
+        newgame();
+        play();
+    }
     else
-        cout << "Please try again Enter 1 or 2 \n";
-
-}
-void delet()//function delete one Employee
-{
-    int n;
-    size_of_struct(n);
-    int i, d;
-    for (i = 0; i <= n; i++)
-        cout << i + 1 << "- Name : " << employ[i].name << "    ";
-    cout << endl;
-    cout << "Enter number of Employees : ";
-    cin >> d;
-    while (1)
-    {
-
-        if (cin.fail() || d <= 0)
-        {
-            cin.clear();
-            cin.ignore(256, '\n');
-            cout << "Worng input  Try again : ";
-            cin >> d;
-            continue;
-        }
-
-        break;
-    }
-    d -= 1;// d=d-1 because array start from 0
-    for (int j = d; j <= n; j++)
-    {
-        employ[j].name = employ[j + 1].name;
-        employ[j].hours = employ[j + 1].hours;
-        employ[j].price = employ[j + 1].price;
-
-    }
-    ofstream temp;//make new text file
-    temp.open("temp.txt");// temp to can  save all Employee not deleted
-    {
-        for (int a = 0; a<n; a++)
-        {
-            temp << employ[a].name << endl;
-            temp << employ[a].hours << endl;
-            temp << employ[a].price << endl;
-        }
-    }
-    temp.close();
-    remove("emp.txt");             // remove old file
-    rename("temp.txt", "emp.txt");//rename temp  to emp text  to can read again
+        exit(0);
 
 }
 int main()
 {
-    char c;
-    cout << "       ***************************        \n";
-    cout << "******  welcome  to system payroll **********\n ";
-    do
-    {
-        cout << "*************************************\n";
-        cout << "A- Add Employee \n" << "P- Print Employees Data \n" << "C- compute \n";
-        cout << "D- delete Employees \n";
-        cout << "Q- Exit \n";
-        cout << "Enter your choice >> ";
-        cin >> c;
-        cin.ignore(256, '\n');
-        cin.clear();
-        switch (c)
-        {
-        case 'A':
-        case 'a':
-            add();
-            break;
-        case 'P':
-        case 'p':
-            print();
-            break;
-        case 'C':
-        case 'c':
-            compute();
-            break;
-        case 'D':
-        case 'd':
-            delet();
-            break;
-        case 'Q':
-        case 'q':
-            exit(0);
-            break;
-        default:
-            cout << "Please try again !!! \n";
-        }
-
-    }
-    while (c != 'Q' || c != 'q');    // Exit
-
+    setcolor(15);
+    menu();
     return 0;
 }
